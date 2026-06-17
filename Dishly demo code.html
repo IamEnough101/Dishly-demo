@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dishly — cook with what you've got</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --paper:#F5EFE2; --paper-2:#EDE5D3;
+    --ink:#20342A; --ink-soft:#4A5C50;
+    --marigold:#E0A12E; --marigold-deep:#C4861A;
+    --tomato:#C9492E; --line:#D7CDB8; --ticket:#FBF8F1;
+    --radius:14px; --shadow:0 18px 40px -20px rgba(32,52,42,.45);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:"Inter",system-ui,sans-serif;color:var(--ink);
+    background:radial-gradient(1200px 600px at 80% -10%, #ECE2CC 0%, transparent 60%), var(--paper);
+    min-height:100vh;-webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:880px;margin:0 auto;padding:22px 20px 80px}
+
+  /* ---------- top bar ---------- */
+  .bar{display:flex;align-items:center;gap:16px;padding-bottom:18px;border-bottom:2px solid var(--ink);margin-bottom:30px;flex-wrap:wrap}
+  .brand{display:flex;align-items:baseline;gap:10px;line-height:1}
+  .brand b{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:clamp(22px,4vw,30px);letter-spacing:-.02em}
+  .brand .tag{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.14em}
+  .bar-right{margin-left:auto;display:flex;align-items:center;gap:18px}
+  .who{font-family:"JetBrains Mono",monospace;font-size:12.5px;color:var(--ink-soft)}
+  .who b{color:var(--ink)}
+  .link-btn{background:none;border:none;cursor:pointer;font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--ink-soft);text-decoration:underline;text-underline-offset:3px;padding:4px}
+  .link-btn:hover{color:var(--tomato)}
+  .stamps{display:flex;align-items:center;gap:7px}
+  .stamps .lbl{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.1em}
+  .stamp{width:18px;height:18px;border-radius:50%;border:1.8px solid var(--marigold-deep);background:var(--marigold);box-shadow:inset 0 0 0 3px var(--paper);transition:transform .2s}
+  .stamp.spent{background:transparent;border-style:dashed;border-color:var(--line);box-shadow:none}
+
+  /* ---------- tabs + history ---------- */
+  .tabs{display:flex;gap:8px;margin:-8px 0 26px}
+  .tab{cursor:pointer;font-family:"JetBrains Mono",monospace;font-size:12.5px;text-transform:uppercase;letter-spacing:.1em;padding:8px 16px;border-radius:999px;border:1.5px solid var(--line);background:transparent;color:var(--ink-soft);transition:all .14s}
+  .tab:hover{border-color:var(--ink);color:var(--ink)}
+  .tab.on{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+  .hist-entry{margin-bottom:40px}
+  .hist-date{max-width:460px;margin:0 auto 9px;font-family:"JetBrains Mono",monospace;font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--ink-soft)}
+  #historyView .pantry-head{margin-bottom:18px}
+
+  /* ---------- hero ---------- */
+  .hero h1{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:clamp(34px,7vw,60px);line-height:.98;letter-spacing:-.03em;margin:6px 0 14px}
+  .hero h1 em{font-style:normal;color:var(--marigold-deep)}
+  .hero p{font-size:16.5px;max-width:56ch;color:var(--ink-soft);margin:0 0 28px;line-height:1.55}
+
+  /* ---------- cards / auth ---------- */
+  .card{background:var(--ticket);border:1px solid var(--line);border-radius:var(--radius);padding:26px;box-shadow:var(--shadow)}
+  .card h2{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:22px;margin:0 0 4px;letter-spacing:-.01em}
+  .card .sub{color:var(--ink-soft);font-size:14px;margin:0 0 20px}
+  .field{margin-bottom:14px}
+  .field label{display:block;font-family:"JetBrains Mono",monospace;font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--ink-soft);margin-bottom:7px}
+  .field input{width:100%;padding:13px 14px;border:1.5px solid var(--line);border-radius:10px;background:var(--paper);font-family:"Inter",sans-serif;font-size:15px;color:var(--ink);transition:border-color .15s}
+  .field input:focus{outline:none;border-color:var(--ink)}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15.5px;padding:13px 22px;border-radius:11px;border:2px solid var(--ink);background:var(--ink);color:var(--paper);transition:transform .12s, background .15s;width:100%}
+  .btn:hover{background:#19271f}
+  .btn:active{transform:translateY(1px)}
+  .btn.accent{background:var(--marigold);border-color:var(--marigold-deep);color:#3a2a06}
+  .btn.accent:hover{background:var(--marigold-deep);color:#fff}
+  .btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+  .switch{margin-top:18px;font-size:13.5px;color:var(--ink-soft);text-align:center}
+  .switch button{background:none;border:none;color:var(--tomato);font-weight:600;cursor:pointer;font-size:13.5px;text-decoration:underline;text-underline-offset:2px}
+  .msg{font-size:13px;margin-top:12px;padding:10px 12px;border-radius:9px;display:none}
+  .msg.err{display:block;background:#fbe9e4;color:#90301a;border:1px solid #eccabf}
+  .msg.note{display:block;background:#fff6e3;color:#7a5908;border:1px solid #efdba6}
+  .disclaimer{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--ink-soft);line-height:1.7;margin-top:22px;padding-top:16px;border-top:1px dashed var(--line)}
+
+  /* ---------- choosers (craving + meal) ---------- */
+  .chooser{margin-bottom:22px}
+  .chooser .label{font-family:"JetBrains Mono",monospace;font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--ink-soft);margin-bottom:9px}
+  .pills{display:flex;flex-wrap:wrap;gap:8px}
+  .pill{cursor:pointer;border:1.5px solid var(--line);background:var(--paper);color:var(--ink-soft);border-radius:999px;padding:8px 15px;font-size:13.5px;font-family:"Inter",sans-serif;font-weight:500;transition:all .14s;display:inline-flex;align-items:center;gap:6px}
+  .pill:hover{border-color:var(--ink);color:var(--ink)}
+  .pill.on{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+  .pill.on.flav{background:var(--marigold);border-color:var(--marigold-deep);color:#3a2a06}
+
+  /* ---------- pantry ---------- */
+  .pantry-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:8px}
+  .pantry-head h3{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:18px;margin:0;letter-spacing:-.01em}
+  .pantry-head .hint{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--ink-soft)}
+  .chip-input{display:flex;flex-wrap:wrap;gap:8px;align-items:center;border:1.5px solid var(--line);border-radius:12px;background:var(--paper);padding:10px 12px;min-height:56px}
+  .chip-input:focus-within{border-color:var(--ink)}
+  .chip{display:inline-flex;align-items:center;gap:7px;background:var(--ink);color:var(--paper);font-size:13.5px;font-weight:500;padding:6px 8px 6px 12px;border-radius:999px}
+  .chip button{background:none;border:none;color:var(--paper);opacity:.7;cursor:pointer;font-size:15px;line-height:1;padding:0 2px}
+  .chip button:hover{opacity:1;color:var(--marigold)}
+  .chip-input input{flex:1;min-width:140px;border:none;background:transparent;font-size:15px;font-family:"Inter",sans-serif;color:var(--ink);padding:8px 4px}
+  .chip-input input:focus{outline:none}
+  .quick{display:flex;flex-wrap:wrap;gap:7px;margin:14px 0 22px}
+  .quick span{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--ink-soft);align-self:center;text-transform:uppercase;letter-spacing:.1em;margin-right:4px}
+  .quick button{cursor:pointer;border:1.5px dashed var(--line);background:transparent;color:var(--ink-soft);border-radius:999px;padding:5px 12px;font-size:13px;font-family:"Inter",sans-serif;transition:all .14s}
+  .quick button:hover{border-color:var(--ink);border-style:solid;color:var(--ink);background:var(--paper)}
+  .divider{height:1px;background:var(--line);margin:4px 0 22px}
+
+  /* ---------- ticket ---------- */
+  #stage{margin-top:34px}
+  .ticket{position:relative;max-width:460px;margin:0 auto;background:var(--ticket);font-family:"JetBrains Mono",monospace;color:var(--ink);box-shadow:var(--shadow);padding:30px 28px 26px}
+  .ticket::before,.ticket::after{content:"";position:absolute;left:0;right:0;height:14px;background:radial-gradient(circle at 7px 7px, var(--paper) 6px, transparent 7px) repeat-x;background-size:14px 14px}
+  .ticket::before{top:-7px}
+  .ticket::after{bottom:-7px}
+  .ticket .pass{text-align:center;font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--marigold-deep);border-bottom:2px dashed var(--line);padding-bottom:12px;margin-bottom:16px}
+  .ticket h3{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:26px;line-height:1.05;margin:0 0 8px;letter-spacing:-.02em;color:var(--ink)}
+  .ttags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+  .ttag{font-size:10px;text-transform:uppercase;letter-spacing:.12em;padding:3px 9px;border-radius:999px;border:1px solid var(--line);color:var(--ink-soft)}
+  .ttag.flav{background:var(--marigold);border-color:var(--marigold-deep);color:#3a2a06}
+  .ticket .meta{display:flex;gap:18px;font-size:12px;color:var(--ink-soft);margin:0 0 16px;flex-wrap:wrap}
+  .ticket .meta b{color:var(--ink)}
+  .ticket .sect{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--marigold-deep);margin:18px 0 9px;border-bottom:1px solid var(--line);padding-bottom:5px}
+  .ticket ul{list-style:none;margin:0;padding:0;font-size:13px;line-height:1.5}
+  .ticket ul li{display:flex;gap:8px;padding:3px 0}
+  .ticket ul li::before{content:"›";color:var(--marigold-deep);font-weight:700}
+  .ticket ol{margin:0;padding-left:20px;font-size:13px;line-height:1.62}
+  .ticket ol li{margin-bottom:11px}
+  .ticket ol li::marker{color:var(--marigold-deep);font-weight:700}
+  .grab{font-size:12px;color:var(--tomato);margin-top:12px;padding:9px 11px;border:1px dashed #e0b3a6;border-radius:8px;background:#fdeee8;line-height:1.5}
+  .ticket .foot{text-align:center;font-size:10.5px;color:var(--ink-soft);margin-top:22px;border-top:2px dashed var(--line);padding-top:12px;letter-spacing:.05em}
+  .alts{max-width:460px;margin:20px auto 0;font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--ink-soft)}
+  .alts .t{text-transform:uppercase;letter-spacing:.14em;font-size:10.5px;margin-bottom:8px}
+  .alts button{display:block;width:100%;text-align:left;background:transparent;border:1px solid var(--line);border-radius:9px;padding:9px 12px;margin-bottom:7px;cursor:pointer;color:var(--ink);font-family:inherit;font-size:12.5px;transition:all .14s}
+  .alts button:hover{border-color:var(--ink);background:var(--paper)}
+  .empty{max-width:460px;margin:0 auto;text-align:center;color:var(--ink-soft);border:1.5px dashed var(--line);border-radius:var(--radius);padding:40px 26px;font-size:14.5px;line-height:1.6}
+  .empty .big{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:20px;color:var(--ink);margin-bottom:6px}
+
+  @keyframes print{from{clip-path:inset(0 0 100% 0);transform:translateY(-8px)}to{clip-path:inset(0 0 0 0);transform:translateY(0)}}
+  .printing{animation:print .55s cubic-bezier(.2,.8,.2,1)}
+  .hide{display:none !important}
+  .footer-note{text-align:center;font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--ink-soft);margin-top:48px;line-height:1.7}
+  @media (max-width:560px){.bar-right{width:100%;margin-left:0;justify-content:space-between}.card{padding:20px}}
+  @media (prefers-reduced-motion:reduce){.printing{animation:none}.btn,.stamp{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="bar">
+    <div class="brand"><b>Dishly</b><span class="tag">pantry → plate</span></div>
+    <div class="bar-right" id="barRight"></div>
+  </header>
+
+  <nav class="tabs hide" id="tabs">
+    <button class="tab on" id="tabCook">Cook</button>
+    <button class="tab" id="tabHistory">History</button>
+  </nav>
+
+  <!-- ============ AUTH GATE ============ -->
+  <section id="authView">
+    <div class="hero">
+      <h1>Tell me your craving.<br><em>I'll cook to spec.</em></h1>
+      <p>Pick a flavour and a meal, add what's in your kitchen, and Dishly prints a recipe with exact measurements and temperatures — no guessing "low heat." Make an account to start; you get <b>3 cooks a week</b>.</p>
+    </div>
+
+    <div class="card" style="max-width:440px">
+      <h2 id="authTitle">Create your account</h2>
+      <p class="sub" id="authSub">Pick a name and a password. That's it.</p>
+      <div class="field"><label for="u">Cook name</label><input id="u" type="text" autocomplete="username" placeholder="e.g. midnight_snacker" /></div>
+      <div class="field"><label for="p">Password</label><input id="p" type="password" autocomplete="current-password" placeholder="••••••••" /></div>
+      <button class="btn accent" id="primaryBtn">Create account &amp; start cooking</button>
+      <div class="msg" id="authMsg"></div>
+      <div class="switch" id="switchRow">Already have an account? <button id="switchBtn">Sign in</button></div>
+      <p class="disclaimer">Heads up: accounts and your weekly cook count live in <b>this browser only</b> (no server). Clearing site data resets everything. Don't reuse a real password — this is a demo-grade login.</p>
+    </div>
+  </section>
+
+  <!-- ============ APP ============ -->
+  <section id="appView" class="hide">
+    <div class="card">
+      <div class="chooser">
+        <div class="label">What are you craving?</div>
+        <div class="pills" id="flavPills"></div>
+      </div>
+      <div class="chooser">
+        <div class="label">Which meal?</div>
+        <div class="pills" id="mealPills"></div>
+      </div>
+      <div class="divider"></div>
+
+      <div class="pantry-head">
+        <h3>What's in your kitchen?</h3>
+        <span class="hint">Type an ingredient, press Enter</span>
+      </div>
+      <div class="chip-input" id="chipBox"><input id="ingInput" type="text" placeholder="tomato, eggs, garlic…" autocomplete="off" /></div>
+      <div class="quick"><span>Quick add</span></div>
+
+      <button class="btn accent" id="cookBtn">Fire the order — cook me something</button>
+      <div class="msg" id="appMsg"></div>
+    </div>
+
+    <div id="stage">
+      <div class="empty" id="emptyState">
+        <div class="big">The pass is clear.</div>
+        Set a craving, a meal and your ingredients, then hit <b>Fire the order</b>. Your recipe prints here.
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ HISTORY ============ -->
+  <section id="historyView" class="hide">
+    <div class="card">
+      <div class="pantry-head">
+        <h2>Your recipe history</h2>
+        <button class="link-btn" id="clearHist">clear history</button>
+      </div>
+      <div id="histList"></div>
+    </div>
+  </section>
+</div>
+
+<script>
+/* ============================================================
+   Dishly — local accounts + filtered, fully-measured cookbook
+   ============================================================ */
+const DB = {
+  accounts(){ try{return JSON.parse(localStorage.getItem('dishly_accounts')||'{}')}catch(e){return {}} },
+  saveAccounts(a){ localStorage.setItem('dishly_accounts', JSON.stringify(a)); },
+  session(){ return localStorage.getItem('dishly_session'); },
+  setSession(u){ u ? localStorage.setItem('dishly_session',u) : localStorage.removeItem('dishly_session'); }
+};
+
+async function hash(str){
+  try{
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str+'::dishly-salt'));
+    return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('');
+  }catch(e){
+    let h=0; const s=str+'::dishly-salt';
+    for(let i=0;i<s.length;i++){ h=(h<<5)-h+s.charCodeAt(i); h|=0; }
+    return 'fb'+(h>>>0).toString(16);
+  }
+}
+
+const LIMIT = 3, WINDOW = 7*24*60*60*1000;
+function remainingFor(acct){
+  const now=Date.now();
+  return Math.max(0, LIMIT - (acct.uses||[]).filter(t=>now-t<WINDOW).length);
+}
+function nextResetText(acct){
+  const now=Date.now();
+  const recent=(acct.uses||[]).filter(t=>now-t<WINDOW).sort((a,b)=>a-b);
+  if(recent.length<LIMIT) return null;
+  const days=Math.ceil((recent[0]+WINDOW-now)/(24*60*60*1000));
+  return days<=1?'in about a day':'in '+days+' days';
+}
+
+/* =========================================================
+   COOKBOOK — every ingredient has an amount; every step has
+   exact temps, times and quantities.
+   flav: sweet | savoury | spicy | sour     meal: breakfast | lunch | dinner | snack
+   key[]: defining ingredients used for pantry matching (normalised)
+   ========================================================= */
+const STAPLES=['salt','pepper','oil','olive oil','water','butter','sugar','flour'];
+const RECIPES=[
+{n:"Garlic Butter Pasta",flav:["savoury"],meal:["dinner","lunch"],t:"15 min",s:2,key:["pasta","garlic"],
+ ing:["200 g (7 oz) dried pasta","45 g (3 tbsp) unsalted butter","4 garlic cloves, thinly sliced","30 g (⅓ cup) grated parmesan","2 tbsp chopped parsley","1 tbsp salt (for the water)","¼ tsp black pepper","¼ tsp chili flakes (optional)"],
+ steps:["Bring 2 litres (8 cups) of water to a rolling boil over high heat and stir in 1 tbsp salt. Add the 200 g pasta and cook 9–10 minutes until al dente. Scoop out 120 ml (½ cup) pasta water, then drain.","In a wide pan over LOW heat (≈120 °C / 250 °F pan surface), melt the 45 g butter slowly, about 1 minute, without letting it foam hard.","Add the 4 sliced garlic cloves and cook 2–3 minutes, stirring, until pale gold. Do not let it brown past straw colour or it turns bitter.","Add the drained pasta and 60 ml (¼ cup) of the reserved water. Raise to MEDIUM and toss 1–2 minutes until glossy, adding more water a splash at a time.","Off the heat, stir in the 30 g parmesan, ¼ tsp salt, ¼ tsp pepper and chili flakes. Top with parsley and serve."]},
+
+{n:"Pasta Pomodoro",flav:["savoury","sour"],meal:["dinner","lunch"],t:"20 min",s:2,key:["pasta","tomato"],
+ ing:["200 g (7 oz) dried pasta","400 g (14 oz) tinned chopped tomatoes (or 4 fresh, diced)","3 garlic cloves, minced","3 tbsp olive oil","8 basil leaves, torn","½ tsp salt","¼ tsp sugar","20 g (¼ cup) grated parmesan"],
+ steps:["Boil the 200 g pasta in 2 L salted water (1 tbsp salt) over high heat for 9–10 minutes; reserve 120 ml (½ cup) water, then drain.","Meanwhile, heat 3 tbsp olive oil in a pan over MEDIUM-LOW (≈140 °C / 285 °F). Add the minced garlic and cook 60 seconds until fragrant, not coloured.","Add the 400 g tomatoes, ½ tsp salt and ¼ tsp sugar. Simmer over MEDIUM for 8–10 minutes, stirring, until thickened.","Add the drained pasta plus 60 ml (¼ cup) reserved water; toss 1 minute to coat.","Off the heat, fold in the torn basil. Serve topped with 20 g parmesan."]},
+
+{n:"Tomato & Egg Stir-fry",flav:["savoury"],meal:["breakfast","lunch"],t:"12 min",s:2,key:["tomato","eggs"],
+ ing:["4 large eggs","3 medium tomatoes (≈350 g), cut into wedges","2 tbsp neutral oil","1 tsp soy sauce","½ tsp sugar","¼ tsp salt","1 spring onion, sliced"],
+ steps:["Beat the 4 eggs with ⅛ tsp salt. Heat 1 tbsp oil in a pan over MEDIUM-HIGH (≈180 °C / 355 °F) and scramble softly for 60–90 seconds until just set. Remove.","Add the remaining 1 tbsp oil and the tomato wedges. Cook over MEDIUM-HIGH for 3–4 minutes until they slump and release juice.","Stir in 1 tsp soy sauce, ½ tsp sugar and ⅛ tsp salt; cook 1 minute.","Return the eggs and fold through for 30–45 seconds. Scatter spring onion over and serve over rice."]},
+
+{n:"Cheesy Scrambled Eggs",flav:["savoury"],meal:["breakfast"],t:"7 min",s:1,key:["eggs","cheese"],
+ ing:["3 large eggs","15 g (1 tbsp) butter","30 g (¼ cup) grated cheddar","1 tbsp milk","⅛ tsp salt","pinch black pepper"],
+ steps:["Whisk the 3 eggs with 1 tbsp milk, ⅛ tsp salt and a pinch of pepper for 20 seconds.","Melt the 15 g butter in a non-stick pan over LOW heat (≈110 °C / 230 °F) until foaming gently.","Pour in the eggs. Stir constantly with a spatula for 2–3 minutes, pulling them into soft curds — keep them moving so they stay creamy.","When still slightly wet, remove from the heat and fold in the 30 g cheese so it just melts. Serve immediately."]},
+
+{n:"Veg Omelette",flav:["savoury"],meal:["breakfast"],t:"10 min",s:1,key:["eggs"],
+ ing:["3 large eggs","15 g (1 tbsp) butter","¼ onion, finely diced","½ tomato, diced","30 g (¼ cup) grated cheese","⅛ tsp salt","pinch black pepper"],
+ steps:["Beat the 3 eggs with ⅛ tsp salt and a pinch of pepper.","Melt the 15 g butter in an 8-inch pan over MEDIUM (≈160 °C / 320 °F). Soften the onion 2 minutes, then add the tomato for 1 minute.","Pour the eggs over the veg, tilt to spread, and cook undisturbed for 2 minutes until the edges set.","Sprinkle the 30 g cheese over one half. Fold the omelette over with a spatula, cook 30 seconds more, then slide onto the plate."]},
+
+{n:"Spinach & Feta Eggs",flav:["savoury"],meal:["breakfast"],t:"10 min",s:1,key:["eggs","spinach"],
+ ing:["3 large eggs","60 g (2 large handfuls) spinach","40 g (⅓ cup) crumbled feta","1 garlic clove, minced","1 tbsp olive oil","⅛ tsp salt","pinch black pepper"],
+ steps:["Heat 1 tbsp olive oil in a pan over MEDIUM (≈160 °C / 320 °F). Add the minced garlic for 30 seconds, then the 60 g spinach. Wilt for 1–2 minutes.","Beat the 3 eggs with ⅛ tsp salt and pepper; pour over the spinach.","Crumble the 40 g feta on top. Cook undisturbed over MEDIUM-LOW for 3–4 minutes until set into a soft frittata.","Slide out, cut into wedges and eat warm."]},
+
+{n:"Shakshuka",flav:["spicy","savoury"],meal:["breakfast","dinner"],t:"25 min",s:2,key:["eggs","tomato"],
+ ing:["4 large eggs","400 g (14 oz) tinned chopped tomatoes","1 onion, diced","1 red bell pepper, diced","2 garlic cloves, minced","2 tbsp olive oil","1 tsp ground cumin","1 tsp paprika","¼–½ tsp chili flakes","½ tsp salt"],
+ steps:["Heat 2 tbsp olive oil in a pan over MEDIUM (≈160 °C / 320 °F). Cook the onion and bell pepper 5–6 minutes until soft.","Add the garlic, 1 tsp cumin, 1 tsp paprika and ¼–½ tsp chili flakes; stir 60 seconds until fragrant.","Pour in the 400 g tomatoes and ½ tsp salt. Simmer over MEDIUM-LOW for 8–10 minutes until thick.","Make 4 wells with a spoon and crack 1 egg into each. Cover and cook over LOW for 6–8 minutes, until the whites set but yolks are still soft (≈63 °C / 145 °F yolk). Serve with bread."]},
+
+{n:"Masala Omelette",flav:["spicy"],meal:["breakfast"],t:"10 min",s:1,key:["eggs","onion"],
+ ing:["3 large eggs","¼ onion, finely chopped","1 green chili, finely chopped","2 tbsp chopped coriander","¼ tsp ground turmeric","¼ tsp chili powder","⅛ tsp salt","1 tbsp neutral oil"],
+ steps:["Beat the 3 eggs with the onion, green chili, coriander, ¼ tsp turmeric, ¼ tsp chili powder and ⅛ tsp salt.","Heat 1 tbsp oil in a pan over MEDIUM (≈170 °C / 340 °F) until shimmering.","Pour in the mixture, swirl to spread, and cook 2 minutes until the underside is set and golden.","Flip and cook 1–2 minutes more. Fold and serve hot."]},
+
+{n:"Fluffy Pancakes",flav:["sweet"],meal:["breakfast"],t:"20 min",s:2,key:["flour","eggs","milk"],
+ ing:["150 g (1¼ cups) plain flour","2 tsp baking powder","2 tbsp (25 g) sugar","¼ tsp salt","1 large egg","250 ml (1 cup) milk","30 g (2 tbsp) melted butter","oil for the pan"],
+ steps:["Whisk the 150 g flour, 2 tsp baking powder, 2 tbsp sugar and ¼ tsp salt in a bowl.","In a second bowl beat the egg, 250 ml milk and 30 g melted butter. Pour into the dry mix and stir just until combined — small lumps are fine. Rest 5 minutes.","Heat a lightly oiled pan over MEDIUM-LOW (≈150 °C / 300 °F). Pour 60 ml (¼ cup) batter per pancake.","Cook 2–3 minutes until bubbles form across the top and the edges look dry, then flip and cook 1–2 minutes more until golden. Repeat with the rest."]},
+
+{n:"French Toast",flav:["sweet"],meal:["breakfast"],t:"12 min",s:2,key:["bread","eggs","milk"],
+ ing:["4 thick slices bread","2 large eggs","120 ml (½ cup) milk","1 tbsp sugar","½ tsp ground cinnamon","½ tsp vanilla (optional)","20 g (1½ tbsp) butter"],
+ steps:["Whisk the 2 eggs, 120 ml milk, 1 tbsp sugar, ½ tsp cinnamon and vanilla in a shallow dish.","Soak each bread slice 20 seconds per side — enough to coat, not turn it soggy.","Melt the 20 g butter in a pan over MEDIUM (≈160 °C / 320 °F).","Fry the slices 2–3 minutes per side until deep golden. Serve with syrup or fruit."]},
+
+{n:"Cinnamon Sugar Toast",flav:["sweet"],meal:["snack","breakfast"],t:"6 min",s:1,key:["bread"],
+ ing:["2 slices bread","20 g (1½ tbsp) softened butter","1 tbsp sugar","½ tsp ground cinnamon"],
+ steps:["Mix the 1 tbsp sugar with ½ tsp cinnamon.","Toast the bread lightly, then spread each slice with the 20 g butter while warm.","Sprinkle the cinnamon sugar evenly over the butter.","For a crisp top, place under a grill/broiler at 200 °C (400 °F) for 60–90 seconds until bubbling. Watch closely."]},
+
+{n:"Grilled Cheese",flav:["savoury"],meal:["lunch","snack"],t:"8 min",s:1,key:["bread","cheese"],
+ ing:["2 slices bread","60 g (½ cup) grated cheese","20 g (1½ tbsp) softened butter"],
+ steps:["Butter the outer side of each bread slice with the 20 g butter.","Pile the 60 g cheese between the slices, buttered sides facing out.","Set a pan over MEDIUM-LOW (≈140 °C / 285 °F). Add the sandwich and press gently.","Cook 3 minutes per side until deep golden and the cheese is fully molten. Cut and eat hot."]},
+
+{n:"Tomato Bruschetta",flav:["savoury","sour"],meal:["snack","lunch"],t:"12 min",s:2,key:["bread","tomato"],
+ ing:["4 slices crusty bread","3 ripe tomatoes (≈350 g), diced","1 garlic clove, halved","2 tbsp olive oil, plus extra","6 basil leaves, torn","¼ tsp salt","pinch black pepper"],
+ steps:["Toast the bread under a grill/broiler at 220 °C (425 °F) for 2–3 minutes until crisp and golden at the edges.","Rub the cut garlic clove over the warm surface of each slice.","Toss the diced tomatoes with 2 tbsp olive oil, ¼ tsp salt, pepper and basil. Let sit 2 minutes.","Spoon the tomato over the toast and finish with a drizzle of olive oil. Serve at once so it stays crisp."]},
+
+{n:"Mushroom Toast",flav:["savoury"],meal:["snack","breakfast","lunch"],t:"12 min",s:1,key:["bread","mushroom"],
+ ing:["2 slices bread","150 g (2 cups) mushrooms, sliced","20 g (1½ tbsp) butter","1 garlic clove, minced","2 sprigs thyme (optional)","⅛ tsp salt","pinch black pepper"],
+ steps:["Melt the 20 g butter in a pan over MEDIUM-HIGH (≈185 °C / 365 °F). Add the 150 g mushrooms in one layer and leave undisturbed 2 minutes to brown.","Toss and cook 3–4 minutes more until deeply golden and the liquid has evaporated.","Add the garlic and thyme for the final 60 seconds; season with ⅛ tsp salt and pepper.","Toast the bread, pile the mushrooms on top, and serve."]},
+
+{n:"Caprese Plate",flav:["savoury","sour"],meal:["snack","lunch"],t:"5 min",s:2,key:["tomato","cheese"],
+ ing:["2 large tomatoes (≈300 g)","125 g (1 ball) fresh mozzarella","8 basil leaves","2 tbsp olive oil","½ tsp flaky salt","pinch black pepper","1 tsp balsamic vinegar (optional)"],
+ steps:["Slice the tomatoes and mozzarella into rounds about 1 cm (⅜ inch) thick.","Arrange them overlapping on a plate, alternating, tucking basil leaves between.","Drizzle with 2 tbsp olive oil (and 1 tsp balsamic if using).","Finish with ½ tsp flaky salt and a pinch of pepper. Serve straight away."]},
+
+{n:"Cheese Quesadilla",flav:["savoury","spicy"],meal:["snack","lunch"],t:"10 min",s:1,key:["tortilla","cheese"],
+ ing:["2 flour tortillas","80 g (¾ cup) grated cheese","1 spring onion, sliced","1 pickled jalapeño, chopped (optional)","1 tsp oil"],
+ steps:["Scatter the 80 g cheese, spring onion and jalapeño over one tortilla and top with the second.","Brush a pan with 1 tsp oil and set over MEDIUM (≈160 °C / 320 °F).","Cook the quesadilla 2–3 minutes until the underside is golden, pressing gently.","Flip and cook 2 minutes more until crisp and the cheese is fully melted. Cut into 4 wedges."]},
+
+{n:"Quick Guacamole",flav:["savoury","sour"],meal:["snack"],t:"8 min",s:2,key:["avocado"],
+ ing:["2 ripe avocados","½ small onion, finely diced","1 tomato, diced","2 tbsp lime juice (about 1 lime)","2 tbsp chopped coriander","½ tsp salt","¼ tsp chili powder (optional)"],
+ steps:["Halve the 2 avocados, scoop into a bowl and mash with a fork to your texture.","Stir in the onion, tomato, 2 tbsp lime juice, coriander, ½ tsp salt and chili powder.","Taste and adjust salt and lime. Serve immediately with chips or bread, while still bright green."]},
+
+{n:"Weeknight Fried Rice",flav:["savoury"],meal:["lunch","dinner"],t:"15 min",s:2,key:["rice","eggs"],
+ ing:["400 g (3 cups) cooked, cold rice","2 large eggs","2 tbsp neutral oil","1 carrot, finely diced","60 g (½ cup) peas","2 spring onions, sliced","2 tbsp soy sauce","2 garlic cloves, minced"],
+ steps:["Use day-old cold rice — it fries best. Break up any clumps with your hands.","Heat 1 tbsp oil in a wok or wide pan over HIGH (≈200 °C / 390 °F). Scramble the 2 eggs for 45 seconds, then push to one side.","Add the remaining 1 tbsp oil, the garlic, carrot and peas; stir-fry 2 minutes.","Add the rice and 2 tbsp soy sauce. Stir-fry 3–4 minutes over HIGH, pressing it against the pan to drive off moisture. Finish with spring onions."]},
+
+{n:"Chicken Fried Rice",flav:["savoury"],meal:["dinner","lunch"],t:"20 min",s:2,key:["rice","chicken"],
+ ing:["400 g (3 cups) cooked, cold rice","250 g (9 oz) chicken breast, diced 1.5 cm","2 large eggs","3 tbsp neutral oil","2 spring onions, sliced","2 garlic cloves, minced","2½ tbsp soy sauce","¼ tsp white pepper"],
+ steps:["Toss the diced chicken with ½ tbsp soy sauce. Heat 1 tbsp oil in a wok over HIGH (≈200 °C / 390 °F) and stir-fry the chicken 3–4 minutes until cooked through (74 °C / 165 °F internal). Remove.","Add 1 tbsp oil and scramble the 2 eggs for 45 seconds; remove.","Add the last 1 tbsp oil and the garlic; stir 20 seconds. Add the cold rice and stir-fry 3 minutes over HIGH.","Return the chicken and eggs, add 2 tbsp soy sauce and ¼ tsp white pepper, toss 1 minute, and finish with spring onions."]},
+
+{n:"Garlic Chicken Skillet",flav:["savoury"],meal:["dinner"],t:"25 min",s:2,key:["chicken","garlic"],
+ ing:["2 chicken breasts (≈400 g)","6 garlic cloves, sliced","2 tbsp olive oil","20 g (1½ tbsp) butter","120 ml (½ cup) chicken stock or water","1 tbsp lemon juice","½ tsp salt","¼ tsp black pepper","1 tsp dried thyme"],
+ steps:["Pat the chicken dry and season with ½ tsp salt, ¼ tsp pepper and 1 tsp thyme.","Heat 2 tbsp olive oil in a pan over MEDIUM-HIGH (≈190 °C / 375 °F). Sear the chicken 4–5 minutes per side until deep golden.","Lower to MEDIUM, add the 20 g butter and sliced garlic; cook 1–2 minutes until fragrant and pale gold.","Pour in 120 ml stock, cover, and cook 6–8 minutes until the chicken reaches 74 °C / 165 °F internal. Stir in 1 tbsp lemon juice and spoon the pan sauce over."]},
+
+{n:"Lemon Garlic Shrimp",flav:["sour","savoury"],meal:["dinner"],t:"12 min",s:2,key:["shrimp","garlic"],
+ ing:["300 g (10 oz) peeled shrimp","4 garlic cloves, minced","30 g (2 tbsp) butter","1 tbsp olive oil","2 tbsp lemon juice","2 tbsp chopped parsley","¼ tsp salt","¼ tsp chili flakes (optional)"],
+ steps:["Pat the 300 g shrimp dry and season with ¼ tsp salt.","Heat 1 tbsp olive oil and the 30 g butter in a pan over MEDIUM-HIGH (≈185 °C / 365 °F). Add the shrimp in one layer and cook 1–1.5 minutes per side until pink and opaque.","Add the garlic (and chili flakes) for the last 30 seconds — don't let it burn.","Off the heat, squeeze in 2 tbsp lemon juice and toss with parsley. Serve over rice or pasta."]},
+
+{n:"Sweet & Sour Chicken",flav:["sweet","sour"],meal:["dinner"],t:"25 min",s:2,key:["chicken"],
+ ing:["350 g (12 oz) chicken thigh, cubed","1 bell pepper, chunked","½ onion, chunked","3 tbsp neutral oil","3 tbsp ketchup","2 tbsp rice vinegar","2 tbsp sugar","1 tbsp soy sauce","120 ml (½ cup) water","1 tbsp cornflour + 2 tbsp water (slurry)"],
+ steps:["Whisk the sauce: 3 tbsp ketchup, 2 tbsp vinegar, 2 tbsp sugar, 1 tbsp soy sauce and 120 ml water. Set aside.","Heat 2 tbsp oil in a pan over MEDIUM-HIGH (≈190 °C / 375 °F). Cook the chicken 5–6 minutes until golden and 74 °C / 165 °F inside. Remove.","Add 1 tbsp oil and stir-fry the pepper and onion 2–3 minutes until just tender.","Return the chicken, pour in the sauce, and bring to a simmer. Stir in the cornflour slurry and cook 1–2 minutes until glossy and thick. Serve over rice."]},
+
+{n:"Creamy Tomato Soup",flav:["savoury"],meal:["lunch","dinner"],t:"25 min",s:3,key:["tomato","onion"],
+ ing:["800 g (2 tins) chopped tomatoes","1 onion, diced","3 garlic cloves, minced","2 tbsp olive oil","500 ml (2 cups) water or stock","60 ml (¼ cup) cream","½ tsp salt","¼ tsp sugar","6 basil leaves"],
+ steps:["Heat 2 tbsp olive oil in a pot over MEDIUM (≈160 °C / 320 °F). Soften the onion 5 minutes, then add the garlic for 1 minute.","Add the 800 g tomatoes, 500 ml water, ½ tsp salt and ¼ tsp sugar. Simmer over MEDIUM-LOW for 15 minutes.","Blend smooth with a stick blender (or in batches), then return to LOW heat.","Stir in 60 ml cream and the basil. Warm through 2 minutes without boiling and serve with toast."]},
+
+{n:"Bean & Tomato Stew",flav:["savoury"],meal:["dinner","lunch"],t:"25 min",s:3,key:["beans","tomato"],
+ ing:["2 tins (800 g) beans, drained","400 g (1 tin) chopped tomatoes","1 onion, diced","3 garlic cloves, minced","1 carrot, diced","2 tbsp olive oil","1 tsp paprika","½ tsp salt","250 ml (1 cup) water"],
+ steps:["Heat 2 tbsp olive oil in a pot over MEDIUM (≈160 °C / 320 °F). Cook the onion and carrot 5 minutes, then add the garlic and 1 tsp paprika for 1 minute.","Add the 400 g tomatoes and 250 ml water; simmer over MEDIUM-LOW for 10 minutes.","Stir in the drained beans and ½ tsp salt. Simmer 8–10 minutes until thick and savoury.","Mash a few beans against the side to thicken further. Serve with crusty bread."]},
+
+{n:"Spicy Black Bean Chili",flav:["spicy"],meal:["dinner"],t:"30 min",s:3,key:["beans","tomato","onion"],
+ ing:["2 tins (800 g) black beans, drained","400 g (1 tin) chopped tomatoes","1 onion, diced","3 garlic cloves, minced","2 tbsp olive oil","1 tbsp chili powder","1 tsp ground cumin","½ tsp smoked paprika","¼–½ tsp cayenne","½ tsp salt","250 ml (1 cup) water"],
+ steps:["Heat 2 tbsp olive oil in a pot over MEDIUM (≈160 °C / 320 °F). Cook the onion 5 minutes until soft.","Add the garlic, 1 tbsp chili powder, 1 tsp cumin, ½ tsp paprika and ¼–½ tsp cayenne; toast 60 seconds, stirring.","Add the 400 g tomatoes, beans, 250 ml water and ½ tsp salt. Bring to a boil, then simmer over LOW for 15–20 minutes, stirring now and then, until thick.","Taste for heat and salt. Serve with rice, or with cheese and lime on top."]},
+
+{n:"Simple Dal",flav:["spicy","savoury"],meal:["dinner","lunch"],t:"30 min",s:3,key:["lentils","onion"],
+ ing:["200 g (1 cup) red lentils, rinsed","700 ml (3 cups) water","1 onion, diced","3 garlic cloves, minced","1 tsp grated ginger","2 tbsp neutral oil or ghee","1 tsp ground cumin","½ tsp ground turmeric","¼–½ tsp chili powder","¾ tsp salt"],
+ steps:["Simmer the 200 g lentils in 700 ml water over MEDIUM-LOW for 18–20 minutes, skimming foam, until soft and broken down. Stir in ¾ tsp salt and ½ tsp turmeric.","In a separate pan, heat 2 tbsp oil over MEDIUM (≈165 °C / 330 °F). Fry the onion 5 minutes until golden.","Add the garlic, ginger, 1 tsp cumin and ¼–½ tsp chili powder; cook 60 seconds until fragrant.","Stir this tempering into the lentils. Loosen with a little hot water if needed and serve over rice."]},
+
+{n:"Chicken Noodle Soup",flav:["savoury"],meal:["dinner","lunch"],t:"30 min",s:3,key:["chicken","noodles"],
+ ing:["300 g (10 oz) chicken breast","150 g (5 oz) noodles","1 onion, diced","2 carrots, sliced","3 garlic cloves, minced","1.2 L (5 cups) water","2 tsp salt","¼ tsp black pepper","2 spring onions, sliced"],
+ steps:["Put the chicken, onion, carrots, garlic, 1.2 L water and 2 tsp salt in a pot. Bring to a boil over HIGH, then lower to a gentle simmer for 15 minutes (chicken at 74 °C / 165 °F internal).","Lift out the chicken, shred it with two forks, and return it to the pot.","Add the 150 g noodles and cook per packet time, usually 4–6 minutes, until tender.","Season with ¼ tsp pepper, top with spring onion, and serve."]},
+
+{n:"Roasted Veg Traybake",flav:["savoury"],meal:["dinner"],t:"40 min",s:3,key:["potato","onion"],
+ ing:["500 g (1 lb) potatoes, 2 cm cubes","1 red onion, wedged","1 bell pepper, chunked","1 carrot, chunked","3 tbsp olive oil","1 tsp salt","½ tsp black pepper","1 tsp dried herbs (rosemary or thyme)"],
+ steps:["Heat the oven to 220 °C / 425 °F (fan 200 °C / 400 °F).","Cut everything into similar 2 cm pieces. Toss on a tray with 3 tbsp olive oil, 1 tsp salt, ½ tsp pepper and 1 tsp herbs.","Spread in a single layer — crowding steams instead of roasting.","Roast 30–35 minutes, turning once at the halfway mark, until the edges are deep golden and a knife slides easily into the potato."]},
+
+{n:"Black Bean Tacos",flav:["spicy","savoury"],meal:["dinner","lunch"],t:"15 min",s:2,key:["beans","tortilla"],
+ ing:["1 tin (400 g) black beans, drained","6 small tortillas","1 tbsp olive oil","½ onion, diced","1 garlic clove, minced","1 tsp ground cumin","½ tsp chili powder","¼ tsp salt","60 g (½ cup) grated cheese","lime wedges, to serve"],
+ steps:["Heat 1 tbsp olive oil in a pan over MEDIUM (≈160 °C / 320 °F). Cook the onion 3 minutes, then add garlic, 1 tsp cumin and ½ tsp chili powder for 30 seconds.","Add the drained beans and ¼ tsp salt with 3 tbsp water. Simmer 4–5 minutes, mashing about half with a fork.","Warm the tortillas in a dry pan over MEDIUM for 20–30 seconds per side until pliable.","Fill with the beans and 60 g cheese; finish with a squeeze of lime."]},
+
+{n:"Banana Oat Bites",flav:["sweet"],meal:["snack","breakfast"],t:"10 min (+chill)",s:2,key:["banana","oats"],
+ ing:["2 ripe bananas, mashed","120 g (1¼ cups) rolled oats","2 tbsp honey or maple syrup","2 tbsp peanut butter","¼ tsp ground cinnamon","pinch salt"],
+ steps:["Mash the 2 bananas in a bowl until mostly smooth.","Stir in the 120 g oats, 2 tbsp honey, 2 tbsp peanut butter, ¼ tsp cinnamon and a pinch of salt until it holds together.","Roll into 12 balls, about 1 heaped tbsp each.","Chill 20 minutes in the fridge to firm up (or bake at 180 °C / 350 °F for 12 minutes for a soft cookie). Keep refrigerated."]}
+];
+
+/* ---------- normalisation ---------- */
+const SYN={egg:'eggs',scallion:'green onion','spring onion':'green onion','spring onions':'green onion',capsicum:'bell pepper',aubergine:'eggplant',courgette:'zucchini',coriander:'cilantro',prawn:'shrimp',prawns:'shrimp',shrimps:'shrimp',mozzarella:'cheese',cheddar:'cheese',feta:'cheese',noodle:'noodles',lentil:'lentils',bean:'beans','black beans':'beans','kidney beans':'beans',chickpeas:'beans',tomatoes:'tomato',potatoes:'potato',onions:'onion',carrots:'carrot',mushrooms:'mushroom','chicken breast':'chicken','chicken thigh':'chicken','chicken thighs':'chicken',tortillas:'tortilla',wraps:'tortilla',wrap:'tortilla',avocados:'avocado',bananas:'banana',oat:'oats','rolled oats':'oats'};
+function norm(raw){
+  let x=raw.toLowerCase().trim().replace(/[^a-z\s]/g,'').replace(/\s+/g,' ');
+  if(!x) return '';
+  if(SYN[x]) return SYN[x];
+  if(x.endsWith('es')&&SYN[x.slice(0,-2)]) return SYN[x.slice(0,-2)];
+  if(x.endsWith('s')&&SYN[x.slice(0,-1)]) return SYN[x.slice(0,-1)];
+  if(x.endsWith('s')&&!x.endsWith('ss')&&!['beans','lentils','noodles','peas','eggs','greens','oats'].includes(x)) x=x.slice(0,-1);
+  return SYN[x]||x;
+}
+
+/* ---------- matching with flavour + meal filters ---------- */
+function matchRecipes(pantryRaw,flav,meal){
+  const have=new Set([...pantryRaw.map(norm).filter(Boolean),...STAPLES]);
+  const pool=RECIPES.filter(r=>
+    (flav==='any'||r.flav.includes(flav)) &&
+    (meal==='any'||r.meal.includes(meal)));
+  const scored=pool.map(r=>{
+    const keyHave=r.key.filter(k=>have.has(k)).length;
+    const keyMiss=r.key.filter(k=>!have.has(k));
+    const complete=keyMiss.length===0;
+    const score=keyHave*10 - keyMiss.length*7;
+    return {r,score,complete,keyMiss,keyHave};
+  });
+  const withPantry=scored.filter(m=>m.keyHave>0)
+    .sort((a,b)=>(b.complete-a.complete)||(b.score-a.score)||(a.r.s-b.r.s));
+  if(withPantry.length) return {list:withPantry,byCraving:false};
+  // nothing in the pantry overlaps — fall back to "by your craving"
+  const byCraving=scored.sort((a,b)=>a.r.s-b.r.s);
+  return {list:byCraving,byCraving:true};
+}
+
+/* =========================================================
+   RENDERING
+   ========================================================= */
+const $=id=>document.getElementById(id);
+function cap(s){return s.charAt(0).toUpperCase()+s.slice(1);}
+
+function ticketHTML(m,byCraving){
+  const r=m.r;
+  const ingHTML=r.ing.map(i=>`<li>${i}</li>`).join('');
+  const stepsHTML=r.steps.map(s=>`<li>${s}</li>`).join('');
+  const flavTags=r.flav.map(f=>`<span class="ttag flav">${f}</span>`).join('');
+  const mealTags=r.meal.map(f=>`<span class="ttag">${f}</span>`).join('');
+  const grab=m.keyMiss&&m.keyMiss.length
+    ? `<div class="grab">Closest match to your pantry — you'll want to grab: <b>${m.keyMiss.map(cap).join(', ')}</b>.</div>`
+    : (byCraving?`<div class="grab">Picked for your craving — check the ingredient list for anything you're missing.</div>`:'');
+  return `
+   <article class="ticket printing">
+     <div class="pass">★ order up ★</div>
+     <h3>${r.n}</h3>
+     <div class="ttags">${flavTags}${mealTags}</div>
+     <div class="meta"><span>⏱ <b>${r.t}</b></span><span>serves <b>${r.s}</b></span></div>
+     ${grab}
+     <div class="sect">Ingredients</div>
+     <ul>${ingHTML}</ul>
+     <div class="sect">Method — exact temps &amp; amounts</div>
+     <ol>${stepsHTML}</ol>
+     <div class="foot">dishly — table for ${r.s}, enjoy</div>
+   </article>`;
+}
+
+let lastResult=null;
+function renderResult(result){
+  lastResult=result;
+  const {list,byCraving}=result;
+  if(!list.length){
+    $('stage').innerHTML=`<div class="empty"><div class="big">No match for that combo.</div>
+      Nothing in the cookbook fits that craving + meal yet. Try <b>Any</b> on one of them, or add a staple like
+      <b>eggs</b>, <b>pasta</b> or <b>tomato</b>.</div>`;
+    return;
+  }
+  const best=list[0];
+  const alts=list.slice(1,4);
+  let html=ticketHTML(best,byCraving);
+  if(alts.length){
+    html+=`<div class="alts"><div class="t">also possible</div>`+
+      alts.map((m,i)=>`<button data-alt="${i+1}">${m.r.n} · ${m.r.t}${m.keyMiss&&m.keyMiss.length?' · needs '+m.keyMiss.map(cap).join(', '):''}</button>`).join('')+
+      `</div>`;
+  }
+  $('stage').innerHTML=html;
+  bindAlts();
+}
+function bindAlts(){
+  document.querySelectorAll('[data-alt]').forEach(b=>{
+    b.onclick=()=>{
+      const idx=+b.dataset.alt;
+      const chosen=lastResult.list[idx];
+      const rest=lastResult.list.filter((_,i)=>i!==idx).slice(0,4);
+      let html=ticketHTML(chosen,lastResult.byCraving);
+      if(rest.length){
+        html+=`<div class="alts"><div class="t">also possible</div>`+
+          rest.map(m=>{const real=lastResult.list.indexOf(m);return `<button data-alt="${real}">${m.r.n} · ${m.r.t}</button>`;}).join('')+`</div>`;
+      }
+      $('stage').innerHTML=html;
+      bindAlts();
+      document.getElementById('stage').scrollIntoView({behavior:'smooth',block:'start'});
+    };
+  });
+}
+
+/* =========================================================
+   AUTH FLOW
+   ========================================================= */
+let mode='create';
+function setMode(m){
+  mode=m;
+  $('authTitle').textContent=m==='create'?'Create your account':'Welcome back';
+  $('authSub').textContent  =m==='create'?"Pick a name and a password. That's it.":'Sign in to see your cooks for the week.';
+  $('primaryBtn').textContent=m==='create'?'Create account & start cooking':'Sign in';
+  $('switchRow').innerHTML  =m==='create'?`Already have an account? <button id="switchBtn">Sign in</button>`:`New here? <button id="switchBtn">Create an account</button>`;
+  $('switchBtn').onclick=()=>setMode(m==='create'?'signin':'create');
+  showMsg('authMsg','');
+}
+function showMsg(id,text,kind){
+  const el=$(id);el.className='msg'+(kind?(' '+kind):'');el.textContent=text||'';
+  if(!text) el.style.display='none';
+}
+$('primaryBtn').onclick=async()=>{
+  const u=$('u').value.trim(),p=$('p').value;
+  if(u.length<2) return showMsg('authMsg','Give your cook name at least 2 characters.','err');
+  if(p.length<4) return showMsg('authMsg','Use a password of at least 4 characters.','err');
+  const accts=DB.accounts(),h=await hash(p);
+  if(mode==='create'){
+    if(accts[u]) return showMsg('authMsg','That name is taken in this browser. Try signing in.','err');
+    accts[u]={pass:h,uses:[]};DB.saveAccounts(accts);DB.setSession(u);enterApp();
+  }else{
+    if(!accts[u]||accts[u].pass!==h) return showMsg('authMsg',"Name or password doesn't match.",'err');
+    DB.setSession(u);enterApp();
+  }
+};
+setMode('create');
+
+/* =========================================================
+   APP FLOW
+   ========================================================= */
+const FLAVOURS=['any','sweet','savoury','spicy','sour'];
+const MEALS=['any','breakfast','lunch','dinner','snack'];
+const QUICK=['eggs','pasta','rice','chicken','tomato','garlic','onion','cheese','beans','potato','bread'];
+let pantry=[], selFlav='any', selMeal='any';
+
+function buildPills(){
+  const fp=$('flavPills');fp.innerHTML='';
+  FLAVOURS.forEach(f=>{
+    const b=document.createElement('button');
+    b.className='pill flav'+(f===selFlav?' on':'');
+    b.textContent=f==='any'?'Any':cap(f);
+    b.onclick=()=>{selFlav=f;buildPills();};
+    fp.appendChild(b);
+  });
+  const mp=$('mealPills');mp.innerHTML='';
+  MEALS.forEach(f=>{
+    const b=document.createElement('button');
+    b.className='pill'+(f===selMeal?' on':'');
+    b.textContent=f==='any'?'Any':cap(f);
+    b.onclick=()=>{selMeal=f;buildPills();};
+    mp.appendChild(b);
+  });
+}
+function buildQuick(){
+  const wrap=document.querySelector('.quick');
+  wrap.querySelectorAll('button').forEach(b=>b.remove());
+  QUICK.forEach(q=>{const b=document.createElement('button');b.textContent='+ '+q;b.onclick=()=>addIng(q);wrap.appendChild(b);});
+}
+function renderChips(){
+  const box=$('chipBox');box.querySelectorAll('.chip').forEach(c=>c.remove());
+  const input=$('ingInput');
+  pantry.forEach((ing,i)=>{
+    const chip=document.createElement('span');chip.className='chip';
+    chip.innerHTML=`${cap(ing)} <button title="remove" aria-label="remove ${ing}">×</button>`;
+    chip.querySelector('button').onclick=()=>{pantry.splice(i,1);renderChips();};
+    box.insertBefore(chip,input);
+  });
+}
+function addIng(raw){
+  const v=raw.trim().toLowerCase();if(!v) return;
+  if(!pantry.includes(v)){pantry.push(v);renderChips();}
+  $('ingInput').value='';
+}
+$('ingInput')?.addEventListener('keydown',e=>{
+  if(e.key==='Enter'||e.key===','){e.preventDefault();addIng($('ingInput').value);}
+  else if(e.key==='Backspace'&&!$('ingInput').value&&pantry.length){pantry.pop();renderChips();}
+});
+
+function refreshStamps(){
+  const accts=DB.accounts(),u=DB.session(),acct=accts[u],left=remainingFor(acct);
+  const stamps=Array.from({length:LIMIT},(_,i)=>`<span class="stamp ${i<left?'':'spent'}"></span>`).join('');
+  $('barRight').innerHTML=`<div class="stamps"><span class="lbl">cooks left</span>${stamps}</div><span class="who">chef <b>${u}</b></span><button class="link-btn" id="logoutBtn">sign out</button>`;
+  $('logoutBtn').onclick=()=>{DB.setSession(null);location.reload();};
+  const btn=$('cookBtn');
+  if(left<=0){
+    btn.disabled=true;const when=nextResetText(acct)||'soon';
+    btn.textContent=`Out of cooks — more free ${when}`;
+    showMsg('appMsg',`You've used all ${LIMIT} cooks this week. Your next one frees up ${when}.`,'note');
+  }else{
+    btn.disabled=false;btn.textContent='Fire the order — cook me something';showMsg('appMsg','');
+  }
+  return left;
+}
+
+$('cookBtn').onclick=()=>{
+  if($('ingInput').value.trim()) addIng($('ingInput').value);
+  if(!pantry.length) return showMsg('appMsg','Add at least one ingredient first.','err');
+  const accts=DB.accounts(),u=DB.session(),acct=accts[u];
+  if(remainingFor(acct)<=0){refreshStamps();return;}
+  const result=matchRecipes(pantry,selFlav,selMeal);
+  if(!result.list.length){ renderResult(result); return; } // no match → no cook spent
+  acct.uses=(acct.uses||[]).filter(t=>Date.now()-t<WINDOW);
+  acct.uses.push(Date.now());
+  acct.history=(acct.history||[]);
+  acct.history.push({name:result.list[0].r.n,ts:Date.now()});
+  if(acct.history.length>60) acct.history=acct.history.slice(-60);
+  DB.saveAccounts(accts);
+  renderResult(result);
+  refreshStamps();updateHistCount();
+  document.getElementById('stage').scrollIntoView({behavior:'smooth',block:'start'});
+};
+
+function showTab(which){
+  const cook=which==='cook';
+  $('appView').classList.toggle('hide',!cook);
+  $('historyView').classList.toggle('hide',cook);
+  $('tabCook').classList.toggle('on',cook);
+  $('tabHistory').classList.toggle('on',!cook);
+  if(!cook) renderHistory();
+}
+function updateHistCount(){
+  const acct=DB.accounts()[DB.session()];
+  const n=((acct&&acct.history)||[]).length;
+  $('tabHistory').textContent=n?`History (${n})`:'History';
+}
+function renderHistory(){
+  const acct=DB.accounts()[DB.session()];
+  const hist=(acct&&acct.history)||[];
+  const wrap=$('histList');
+  if(!hist.length){
+    wrap.innerHTML=`<div class="empty"><div class="big">No recipes yet.</div>Cook something and it'll be saved here so you can come back to it any time.</div>`;
+    return;
+  }
+  wrap.innerHTML=hist.slice().reverse().map(h=>{
+    const r=RECIPES.find(x=>x.n===h.name);
+    if(!r) return '';
+    const d=new Date(h.ts);
+    const when=d.toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short'})+' · '+d.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'});
+    return `<div class="hist-entry"><div class="hist-date">cooked ${when}</div>${ticketHTML({r,keyMiss:[]},false)}</div>`;
+  }).join('');
+}
+function enterApp(){
+  $('authView').classList.add('hide');
+  $('tabs').classList.remove('hide');
+  buildPills();buildQuick();renderChips();refreshStamps();updateHistCount();
+  $('tabCook').onclick=()=>showTab('cook');
+  $('tabHistory').onclick=()=>showTab('history');
+  $('clearHist').onclick=()=>{
+    if(!confirm('Clear your whole recipe history? This cannot be undone.')) return;
+    const accts=DB.accounts(),u=DB.session();
+    if(accts[u]){accts[u].history=[];DB.saveAccounts(accts);}
+    renderHistory();updateHistCount();
+  };
+  showTab('cook');
+}
+(function boot(){const u=DB.session(),accts=DB.accounts();if(u&&accts[u]) enterApp();})();
+</script>
+</body>
+</html>
